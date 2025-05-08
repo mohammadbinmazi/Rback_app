@@ -1,4 +1,6 @@
-const checkRoleAccess = (roles) => (req, res, next) => {
+const { getUserParent } = require("../models/userModel");
+
+const checkRoleAccess = (roles) => (req, res, anext) => {
   const { role } = req.user;
   if (!roles.includes(role)) {
     return res.status(403).json({ msg: "Access denied" });
