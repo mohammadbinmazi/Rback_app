@@ -1,3 +1,5 @@
+// importing the various function from model
+
 const {
   findUserByEmail,
   getAllUsers,
@@ -6,6 +8,7 @@ const {
   getUserParent,
 } = require("../models/userModel");
 
+// get users help to fetch users it checks superadmin and admin and by conditon return all user
 const getUsers = async (req, res) => {
   const { role, id } = req.user;
 
@@ -22,6 +25,7 @@ const getUsers = async (req, res) => {
     res.status(500).json({ msg: "Error fetching users", err });
   }
 };
+// this is function to delete a user if superadmin it can delete all
 
 const deleteUser = async (req, res) => {
   const { role, id: requesterId } = req.user;

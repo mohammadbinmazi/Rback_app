@@ -1,6 +1,10 @@
+// importing the various functions from models and utils
+
 const { findUserByEmail, createUser } = require("../models/userModel");
 const { hashPassword, comparePassword } = require("../utils/hashPassword");
 const generateToken = require("../utils/generateToken");
+
+// creating the registeration function for registering the new users
 
 const register = async (req, res) => {
   try {
@@ -17,6 +21,8 @@ const register = async (req, res) => {
     res.status(500).json({ msg: "Server error", err });
   }
 };
+
+// login function for already exists users
 
 const login = async (req, res) => {
   try {

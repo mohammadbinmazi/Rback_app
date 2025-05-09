@@ -1,12 +1,13 @@
-const { getUserParent } = require("../models/userModel");
+// it check the access of roles
 
-const checkRoleAccess = (roles) => (req, res, anext) => {
+const checkRoleAccess = (roles) => (req, res, next) => {
   const { role } = req.user;
   if (!roles.includes(role)) {
     return res.status(403).json({ msg: "Access denied" });
   }
   next();
 };
+// it verify the verifyOwnershipOrSuperadmin
 
 const verifyOwnershipOrSuperadmin = async (req, res, next) => {
   const { role, id: requesterId } = req.user;
