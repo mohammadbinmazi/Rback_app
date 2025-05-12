@@ -11,7 +11,7 @@ const {
 router.get(
   "/",
   authMiddleware,
-  checkRoleAccess(["superadmin", "admin"]),
+  checkRoleAccess(["superadmin", "admin", "manager"]),
   getUsers
 );
 

@@ -22,3 +22,25 @@ const connectDB = async () => {
 // connect db is used to show on console log database is connected
 
 module.exports = { pool, connectDB };
+
+// const { Pool } = require("pg");
+
+// const pool = new Pool({
+//   user: "postgres",
+//   host: "localhost",
+//   database: "rbac_app",
+//   password: "arabbinmazi",
+//   port: "5432",
+// });
+
+// const connectDB = async () => {
+//   try {
+//     await pool.connect();
+//     console.log("Database connected succesfully");
+//   } catch (err) {
+//     console.log("error while connecting the database", err);
+//     process.exit(1);
+//   }
+// };
+
+// module.exports = { pool, connectDB };

@@ -15,3 +15,16 @@ const comparePassword = async (password, hashedPassword) => {
 };
 
 module.exports = { hashPassword, comparePassword };
+
+// const bcrypt = require("bcryptjs");
+
+// const hashedPassword = async (password) => {
+//   const salt = await bcrypt.genSalt(10);
+//   const hashed = await bcrypt.hash(password, salt);
+//   return hashed;
+// };
+// const comparePassword = async (password, hashedPassword) => {
+//   return bcrypt.compare(password, hashedPassword);
+// };
+
+// module.exports = { hashedPassword, comparePassword };

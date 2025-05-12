@@ -1,48 +1,129 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UserServices from "../../services/UserServices";
+import RegisterForm from "../../components/RegisterForm/RegisterForm";
+
 const DashboardPage = () => {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [loggedInUser, setLoggedInUser] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      const token = localStorage.getItem("token");
+  const fetchUsers = async () => {
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
 
-      if (!token) {
-        navigate("/login");
-        return;
-      }
+    if (!token || !user) {
+      navigate("/login");
+      return;
+    }
 
-      try {
-        const fetchedUsers = await UserServices.fetchUsers(token); //
+    setLoggedInUser(user);
+
+    try {
+      const fetchedUsers = await UserServices.fetchUsers(token);
+      if (user.role === "superadmin") {
+        const onlyAdmins = fetchedUsers.filter((u) => u.role === "admin");
+        setUsers(onlyAdmins);
+      } else {
         setUsers(fetchedUsers);
-      } catch (error) {
-        setError("Failed to fetch users.");
       }
-    };
+    } catch (error) {
+      setError("Failed to fetch users.");
+    }
+  };
 
+  useEffect(() => {
     fetchUsers();
   }, [navigate]);
 
+  const toggleForm = () => setShowForm((prev) => !prev);
+
+  const handleUserRegistered = (newUser) => {
+    if (loggedInUser?.role === "superadmin" && newUser.role !== "admin") return;
+    setUsers((prev) => [newUser, ...prev]);
+    setShowForm(false);
+  };
+
+  const handleDeleteUser = async (id) => {
+    const token = localStorage.getItem("token");
+
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+
+    try {
+      await UserServices.deleteUser(id, token);
+      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
+    } catch (err) {
+      alert("Error deleting user");
+      console.error(err);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
   return (
-    <div>
-      <h1>Dashboard</h1>
-      {error && <p className="text-red-500">{error}</p>}
-      <div>
-        <h2>Users List</h2>
-        <ul>
-          {users.length > 0 ? (
-            users.map((user) => (
-              <li key={user.id}>
-                {user.name} - {user.email} ({user.role})
-              </li>
-            ))
-          ) : (
-            <p>No users found.</p>
-          )}
-        </ul>
+    <div className="p-8 max-w-5xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-4xl font-bold text-gray-800">Dashboard</h1>
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+        >
+          Logout
+        </button>
+      </div>
+
+      {error && <p className="text-red-500 font-medium mb-4">{error}</p>}
+
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-semibold text-gray-700">Users</h2>
+        <button
+          onClick={toggleForm}
+          className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+        >
+          {showForm ? "Close" : "Register New User"}
+          <span className="text-lg">{showForm ? "✖️" : "➕"}</span>
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="mb-8">
+          <RegisterForm onUserRegistered={handleUserRegistered} />
+        </div>
+      )}
+
+      <div className="grid gap-4">
+        {users.length > 0 ? (
+          users.map((user) => (
+            <div
+              key={user.id}
+              className="bg-white border border-gray-200 rounded-lg shadow-md p-4 flex justify-between items-center hover:shadow-lg transition"
+            >
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  {user.name}
+                </h3>
+                <p className="text-sm text-gray-500">{user.email}</p>
+                <span className="text-sm text-indigo-600 font-medium capitalize">
+                  {user.role}
+                </span>
+              </div>
+              <button
+                onClick={() => handleDeleteUser(user.id)}
+                className="px-4 py-1.5 bg-red-500 text-white rounded hover:bg-red-600 transition"
+              >
+                Delete
+              </button>
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-600">No users found.</p>
+        )}
       </div>
     </div>
   );

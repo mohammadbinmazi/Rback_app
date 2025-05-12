@@ -1,4 +1,4 @@
-// it check the access of roles
+const { getUserParent } = require("../models/userModel");
 
 const checkRoleAccess = (roles) => (req, res, next) => {
   const { role } = req.user;
