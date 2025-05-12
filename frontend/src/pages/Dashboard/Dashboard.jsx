@@ -8,6 +8,7 @@ const DashboardPage = () => {
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
   const navigate = useNavigate();
 
   const fetchUsers = async () => {
@@ -38,12 +39,24 @@ const DashboardPage = () => {
     fetchUsers();
   }, [navigate]);
 
-  const toggleForm = () => setShowForm((prev) => !prev);
+  const toggleForm = () => {
+    setEditingUser(null); // ensure edit form is not showing
+    setShowForm((prev) => !prev);
+  };
 
   const handleUserRegistered = (newUser) => {
     if (loggedInUser?.role === "superadmin" && newUser.role !== "admin") return;
     setUsers((prev) => [newUser, ...prev]);
     setShowForm(false);
+  };
+
+  const handleUserUpdated = (updatedUser) => {
+    setUsers((prev) =>
+      prev.map((user) =>
+        user.id === updatedUser.id ? { ...user, ...updatedUser } : user
+      )
+    );
+    setEditingUser(null);
   };
 
   const handleDeleteUser = async (id) => {
@@ -97,6 +110,16 @@ const DashboardPage = () => {
         </div>
       )}
 
+      {editingUser && (
+        <div className="mb-8">
+          <RegisterForm
+            user={editingUser}
+            onUserUpdated={handleUserUpdated}
+            onCancel={() => setEditingUser(null)}
+          />
+        </div>
+      )}
+
       <div className="grid gap-4">
         {users.length > 0 ? (
           users.map((user) => (
@@ -113,12 +136,20 @@ const DashboardPage = () => {
                   {user.role}
                 </span>
               </div>
-              <button
-                onClick={() => handleDeleteUser(user.id)}
-                className="px-4 py-1.5 bg-red-500 text-white rounded hover:bg-red-600 transition"
-              >
-                Delete
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setEditingUser(user)}
+                  className="px-3 py-1.5 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDeleteUser(user.id)}
+                  className="px-4 py-1.5 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))
         ) : (

@@ -38,7 +38,27 @@ const deleteUser = async (id, token) => {
   }
 };
 
+const editUser = async (id, updatedData, token) => {
+  try {
+    const response = await axios.put(`${API_URL}/${id}`, updatedData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    console.log(`User with ID ${id} updated`, response.data);
+    return response.data;
+  } catch (error) {
+    console.error(
+      `Error editing user with ID ${id}:`,
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
 export default {
   fetchUsers,
   deleteUser,
+  editUser,
 };

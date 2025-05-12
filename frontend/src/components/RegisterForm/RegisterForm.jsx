@@ -1,185 +1,132 @@
 import { useState, useEffect } from "react";
+import UserServices from "../../services/UserServices";
 
-const RegisterForm = ({ onUserRegistered }) => {
+const RegisterForm = ({ user, onUserRegistered, onUserUpdated, onCancel }) => {
+  const isEditMode = Boolean(user);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
-    confirmPassword: "",
-    role: "cashier",
+    role: "staff",
   });
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [userRole, setUserRole] = useState(null);
-  const [allowedRoles, setAllowedRoles] = useState([]);
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!user || !user.role) {
-      setUserRole(null);
-      return;
+    if (isEditMode) {
+      setFormData({
+        name: user.name,
+        email: user.email,
+        password: "", // optional: ask for password change
+        role: user.role,
+      });
     }
-
-    setUserRole(user.role);
-
-    switch (user.role) {
-      case "superadmin":
-        setAllowedRoles(["admin", "manager", "cashier", "staff"]);
-        break;
-      case "admin":
-        setAllowedRoles(["manager", "cashier", "staff"]);
-        break;
-      case "manager":
-        setAllowedRoles(["cashier", "staff"]);
-        break;
-      default:
-        setAllowedRoles([]);
-    }
-  }, []);
+  }, [user]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!user || !user.id || !allowedRoles.length) {
-      setError("You don't have permission to register a new user.");
-      return;
-    }
-
-    const { name, email, password, confirmPassword, role } = formData;
-
-    if (!name || !email || !password || !confirmPassword) {
-      setError("Please fill in all fields.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
+    const token = localStorage.getItem("token");
 
     try {
-      setLoading(true);
-
-      const response = await fetch("http://localhost:5000/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-          role,
-          parent_id: user.id,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Registration failed");
+      if (isEditMode) {
+        const updatedUser = await UserServices.editUser(
+          user.id,
+          formData,
+          token
+        );
+        onUserUpdated(updatedUser);
+      } else {
+        const newUser = await UserServices.registerUser(formData, token);
+        onUserRegistered(newUser);
       }
-
-      if (onUserRegistered) {
-        onUserRegistered(data.user);
-      }
-
-      setFormData({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        role: allowedRoles[0],
-      });
     } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      alert("Failed to submit form.");
     }
   };
 
-  if (!allowedRoles.length) {
-    return (
-      <div className="text-center text-gray-600 mt-10 text-lg font-semibold">
-        ⛔ You do not have permission to register users.
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-lg mx-auto mt-10 bg-white shadow-xl rounded-xl p-8 border border-gray-100">
-      <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-        👤 Register New User
-      </h2>
-
-      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <form
+      onSubmit={handleSubmit}
+      className="bg-gray-100 p-6 rounded-lg shadow-md"
+    >
+      <h3 className="text-xl font-semibold mb-4">
+        {isEditMode ? "Edit User" : "Register New User"}
+      </h3>
+      <div className="mb-4">
+        <label className="block mb-1 font-medium">Name</label>
         <input
           type="text"
           name="name"
-          placeholder="Full Name"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className="w-full border px-3 py-2 rounded"
           value={formData.name}
           onChange={handleChange}
+          required
         />
+      </div>
 
+      <div className="mb-4">
+        <label className="block mb-1 font-medium">Email</label>
         <input
           type="email"
           name="email"
-          placeholder="Email Address"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className="w-full border px-3 py-2 rounded"
           value={formData.email}
           onChange={handleChange}
+          required
         />
+      </div>
 
+      <div className="mb-4">
+        <label className="block mb-1 font-medium">Password</label>
         <input
           type="password"
           name="password"
-          placeholder="Password"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className="w-full border px-3 py-2 rounded"
           value={formData.password}
           onChange={handleChange}
+          required={!isEditMode} // optional in edit mode
         />
+      </div>
 
-        <input
-          type="password"
-          name="confirmPassword"
-          placeholder="Confirm Password"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-        />
-
+      <div className="mb-4">
+        <label className="block mb-1 font-medium">Role</label>
         <select
           name="role"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className="w-full border px-3 py-2 rounded"
           value={formData.role}
           onChange={handleChange}
+          required
         >
-          {allowedRoles.map((roleOption) => (
-            <option key={roleOption} value={roleOption}>
-              {roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
-            </option>
-          ))}
+          <option value="admin">Admin</option>
+          <option value="manager">Manager</option>
+          <option value="cashier">Cashier</option>
+          <option value="staff">Staff</option>
         </select>
+      </div>
 
+      <div className="flex gap-4">
         <button
           type="submit"
-          disabled={loading}
-          className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition duration-200"
+          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
         >
-          {loading ? "Registering..." : "Register User"}
+          {isEditMode ? "Update User" : "Register"}
         </button>
-      </form>
-    </div>
+        {isEditMode && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 transition"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
+    </form>
   );
 };
 

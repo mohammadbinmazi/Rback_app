@@ -68,6 +68,9 @@ const LoginForm = () => {
         >
           Login
         </button>
+        <div className="mt-8 text-center text-sm text-gray-500">
+          <p>© 2025 Binmazi. All rights reserved.</p>
+        </div>
       </form>
     </div>
   );

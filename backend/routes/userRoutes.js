@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { getUsers, deleteUser } = require("../controllers/userController");
+const {
+  getUsers,
+  deleteUser,
+  editUser,
+} = require("../controllers/userController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const {
   checkRoleAccess,
@@ -17,5 +21,7 @@ router.get(
 
 // Route for deleting a user (only accessible by superadmins or the user themselves)
 router.delete("/:id", authMiddleware, verifyOwnershipOrSuperadmin, deleteUser);
+
+router.put("/:id", authMiddleware, verifyOwnershipOrSuperadmin, editUser);
 
 module.exports = router;
