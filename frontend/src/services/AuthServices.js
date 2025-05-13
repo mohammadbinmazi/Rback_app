@@ -29,3 +29,7 @@ export const signupUser = async (formData) => {
     throw err.response?.data?.msg || "Signup failed";
   }
 };
+export default {
+  signupUser,
+  login,
+};
