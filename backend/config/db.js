@@ -2,13 +2,7 @@ const dotenv = require("dotenv");
 const { Pool } = require("pg");
 // importing the pool from pg to add connection
 dotenv.config();
-// const pool = new Pool({
-//   user: "postgres",
-//   host: "localhost",
-//   database: "rbac_app",
-//   password: "arabbinmazi",
-//   port: 5432,
-// });
+
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,

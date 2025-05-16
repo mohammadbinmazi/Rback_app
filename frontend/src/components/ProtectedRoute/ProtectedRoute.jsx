@@ -5,10 +5,10 @@ const ProtectedRoute = ({ element }) => {
   const isAuthenticated = localStorage.getItem("token");
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" />; // If not authenticated, redirect to login
+    return <Navigate to="/login" />;
   }
 
-  return element; // If authenticated, render the element (Dashboard)
+  return element;
 };
 
 export default ProtectedRoute;
