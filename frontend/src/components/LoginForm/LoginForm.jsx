@@ -14,7 +14,8 @@ const LoginForm = () => {
       const { user, token } = await login(email, password);
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
-      navigate("/dashboard");
+      console.log("Login response:", { user, token });
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(err.message);
     }

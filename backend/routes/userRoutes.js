@@ -4,6 +4,7 @@ const {
   getUsers,
   deleteUser,
   editUser,
+  getUserByIdController,
 } = require("../controllers/userController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const {
@@ -23,5 +24,11 @@ router.get(
 router.delete("/:id", authMiddleware, verifyOwnershipOrSuperadmin, deleteUser);
 
 router.put("/:id", authMiddleware, verifyOwnershipOrSuperadmin, editUser);
+router.get(
+  "/:id",
+  authMiddleware,
+  checkRoleAccess(["superadmin", "admin", "manager"]),
+  getUserByIdController
+);
 
 module.exports = router;

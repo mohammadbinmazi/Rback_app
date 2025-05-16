@@ -95,6 +95,10 @@ const updateUserById = async (id, updatedFields) => {
 
   return result.rows[0];
 };
+const getUserById = async (id) => {
+  const result = await pool.query("SELECT * FROM users WHERE id = $1", [id]);
+  return result.rows[0];
+};
 
 module.exports = {
   findUserByEmail,
@@ -105,6 +109,7 @@ module.exports = {
   getUserParent,
   getAllDescendantUsers,
   updateUserById,
+  getUserById,
 };
 // const { pool } = require("../config/db");
 

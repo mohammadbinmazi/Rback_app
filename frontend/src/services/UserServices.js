@@ -38,27 +38,40 @@ const deleteUser = async (id, token) => {
   }
 };
 
-const editUser = async (id, updatedData, token) => {
+export const editUser = async (userId, userData, token) => {
   try {
-    const response = await axios.put(`${API_URL}/${id}`, updatedData, {
+    const response = await axios.put(`${API_URL}/${userId}`, userData, {
       headers: {
-        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     });
-    console.log(`User with ID ${id} updated`, response.data);
     return response.data;
   } catch (error) {
     console.error(
-      `Error editing user with ID ${id}:`,
+      "Error updating user:",
       error.response?.data || error.message
     );
-    throw error;
+    throw new Error(error.response?.data?.msg || "Failed to update user");
   }
 };
 
+// services/userService.js
+
+export const fetchUserById = async (userId, token) => {
+  try {
+    const response = await axios.get(`${API_URL}/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    throw new Error(error.response?.data?.msg || "Failed to fetch user");
+  }
+};
 export default {
   fetchUsers,
   deleteUser,
-  editUser,
 };

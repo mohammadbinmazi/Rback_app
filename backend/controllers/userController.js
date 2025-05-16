@@ -124,6 +124,7 @@ const {
   getUserParent,
   getAllDescendantUsers,
   updateUserById,
+  getUserById,
 } = require("../models/userModel");
 
 const getUsers = async (req, res) => {
@@ -212,5 +213,21 @@ const editUser = async (req, res) => {
     res.status(500).json({ msg: "Error editing user", err });
   }
 };
+const getUserByIdController = async (req, res) => {
+  const { id } = req.params;
 
-module.exports = { getUsers, deleteUser, editUser };
+  try {
+    const user = await getUserById(id);
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    res.status(200).json(user);
+  } catch (err) {
+    console.error("Error fetching user by ID:", err);
+    res.status(500).json({ msg: "Error fetching user", err });
+  }
+};
+
+module.exports = { getUsers, deleteUser, editUser, getUserByIdController };
